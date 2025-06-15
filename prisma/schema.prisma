@@ -21,12 +21,14 @@ model Player {
 }
 
 model Match {
-  id          String   @id @default(cuid())
-  date        DateTime @default(now())
-  score       String // e.g., "6-4, 6-2"
-  pointsTeam1 Int
-  pointsTeam2 Int
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  date       DateTime @default(now())
+  sets       String // JSON array of sets: [{"team1": 6, "team2": 4}, {"team1": 6, "team2": 3}]
+  setsTeam1  Int // Number of sets won by team 1
+  setsTeam2  Int // Number of sets won by team 2
+  gamesTeam1 Int // Total games won by team 1
+  gamesTeam2 Int // Total games won by team 2
+  createdAt  DateTime @default(now())
 
   // Team 1 players (2 players)
   team1Players Player[] @relation("Team1Players")

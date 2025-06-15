@@ -2,6 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { PlusIcon, TrophyIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
+type Set = {
+  team1: number;
+  team2: number;
+};
+
 async function getMatches() {
   return await prisma.match.findMany({
     include: {
@@ -14,6 +19,15 @@ async function getMatches() {
 
 export default async function MatchesPage() {
   const matches = await getMatches();
+
+  const formatSetsDisplay = (setsJson: string) => {
+    try {
+      const sets: Set[] = JSON.parse(setsJson);
+      return sets.map((set) => `${set.team1}-${set.team2}`).join(" ");
+    } catch {
+      return "Invalid format";
+    }
+  };
 
   return (
     <div className="p-4">
@@ -39,7 +53,7 @@ export default async function MatchesPage() {
           </div>
         ) : (
           matches.map((match) => {
-            const team1Won = match.pointsTeam1 > match.pointsTeam2;
+            const team1Won = match.setsTeam1 > match.setsTeam2;
 
             return (
               <div
@@ -51,7 +65,17 @@ export default async function MatchesPage() {
                     {new Date(match.date).toLocaleDateString()}
                   </div>
                   <div className="text-sm font-medium text-gray-900">
-                    {match.score}
+                    Sets: {match.setsTeam1}-{match.setsTeam2}
+                  </div>
+                </div>
+
+                {/* Sets Display */}
+                <div className="text-center mb-4">
+                  <div className="text-lg font-mono font-medium text-gray-900">
+                    {formatSetsDisplay(match.sets)}
+                  </div>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Total Games: {match.gamesTeam1}-{match.gamesTeam2}
                   </div>
                 </div>
 
@@ -85,12 +109,21 @@ export default async function MatchesPage() {
                         {match.team1Players.map((p) => p.name).join(" & ")}
                       </div>
                     </div>
-                    <div
-                      className={`text-xl font-bold ${
-                        team1Won ? "text-emerald-900" : "text-gray-700"
-                      }`}
-                    >
-                      {match.pointsTeam1}
+                    <div className="text-right">
+                      <div
+                        className={`text-xl font-bold ${
+                          team1Won ? "text-emerald-900" : "text-gray-700"
+                        }`}
+                      >
+                        {match.setsTeam1}
+                      </div>
+                      <div
+                        className={`text-sm ${
+                          team1Won ? "text-emerald-700" : "text-gray-600"
+                        }`}
+                      >
+                        {match.gamesTeam1} games
+                      </div>
                     </div>
                   </div>
 
@@ -123,12 +156,21 @@ export default async function MatchesPage() {
                         {match.team2Players.map((p) => p.name).join(" & ")}
                       </div>
                     </div>
-                    <div
-                      className={`text-xl font-bold ${
-                        !team1Won ? "text-emerald-900" : "text-gray-700"
-                      }`}
-                    >
-                      {match.pointsTeam2}
+                    <div className="text-right">
+                      <div
+                        className={`text-xl font-bold ${
+                          !team1Won ? "text-emerald-900" : "text-gray-700"
+                        }`}
+                      >
+                        {match.setsTeam2}
+                      </div>
+                      <div
+                        className={`text-sm ${
+                          !team1Won ? "text-emerald-700" : "text-gray-600"
+                        }`}
+                      >
+                        {match.gamesTeam2} games
+                      </div>
                     </div>
                   </div>
                 </div>

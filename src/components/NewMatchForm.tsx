@@ -3,11 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addMatch } from "@/app/matches/actions";
+import { PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
 
 type Player = {
   id: string;
   name: string;
   createdAt: Date;
+};
+
+type Set = {
+  team1: number;
+  team2: number;
 };
 
 type Props = {
@@ -18,9 +24,7 @@ export default function NewMatchForm({ players }: Props) {
   const router = useRouter();
   const [team1Players, setTeam1Players] = useState<Player[]>([]);
   const [team2Players, setTeam2Players] = useState<Player[]>([]);
-  const [score, setScore] = useState("");
-  const [pointsTeam1, setPointsTeam1] = useState("");
-  const [pointsTeam2, setPointsTeam2] = useState("");
+  const [sets, setSets] = useState<Set[]>([{ team1: 0, team2: 0 }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availablePlayers = players.filter(
@@ -49,27 +53,83 @@ export default function NewMatchForm({ players }: Props) {
     setTeam2Players(team2Players.filter((p) => p.id !== playerId));
   };
 
+  const addSet = () => {
+    if (sets.length < 5) {
+      setSets([...sets, { team1: 0, team2: 0 }]);
+    }
+  };
+
+  const removeSet = (index: number) => {
+    if (sets.length > 1) {
+      setSets(sets.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateSet = (index: number, team: "team1" | "team2", value: number) => {
+    const newSets = [...sets];
+    newSets[index][team] = Math.max(0, value);
+    setSets(newSets);
+  };
+
+  const calculateMatchStats = () => {
+    let setsTeam1 = 0;
+    let setsTeam2 = 0;
+    let gamesTeam1 = 0;
+    let gamesTeam2 = 0;
+
+    sets.forEach((set) => {
+      gamesTeam1 += set.team1;
+      gamesTeam2 += set.team2;
+
+      if (set.team1 > set.team2) {
+        setsTeam1++;
+      } else if (set.team2 > set.team1) {
+        setsTeam2++;
+      }
+    });
+
+    return { setsTeam1, setsTeam2, gamesTeam1, gamesTeam2 };
+  };
+
+  const formatSetsDisplay = () => {
+    return sets.map((set) => `${set.team1}-${set.team2}`).join(", ");
+  };
+
+  const isValidMatch = () => {
+    const hasValidSets = sets.every((set) => set.team1 > 0 || set.team2 > 0);
+    const hasCompletedSet = sets.some((set) => set.team1 !== set.team2);
+
+    return (
+      hasValidSets &&
+      hasCompletedSet &&
+      team1Players.length === 2 &&
+      team2Players.length === 2
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (team1Players.length !== 2 || team2Players.length !== 2) {
-      alert("Each team must have exactly 2 players");
+    if (!isValidMatch()) {
+      alert(
+        "Please ensure teams are complete and at least one set has a winner"
+      );
       return;
     }
 
-    if (!score.trim() || !pointsTeam1 || !pointsTeam2) {
-      alert("Please fill in all fields");
-      return;
-    }
+    const { setsTeam1, setsTeam2, gamesTeam1, gamesTeam2 } =
+      calculateMatchStats();
 
     setIsSubmitting(true);
     try {
       await addMatch({
         team1PlayerIds: team1Players.map((p) => p.id),
         team2PlayerIds: team2Players.map((p) => p.id),
-        score: score.trim(),
-        pointsTeam1: parseInt(pointsTeam1),
-        pointsTeam2: parseInt(pointsTeam2),
+        sets: JSON.stringify(sets),
+        setsTeam1,
+        setsTeam2,
+        gamesTeam1,
+        gamesTeam2,
       });
       router.push("/matches");
     } catch (error) {
@@ -90,6 +150,8 @@ export default function NewMatchForm({ players }: Props) {
       </div>
     );
   }
+
+  const { setsTeam1, setsTeam2 } = calculateMatchStats();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -171,71 +233,102 @@ export default function NewMatchForm({ players }: Props) {
         )}
       </div>
 
-      {/* Score Input */}
-      <div className="space-y-4">
+      {/* Sets Scoring */}
+      {team1Players.length === 2 && team2Players.length === 2 && (
         <div>
-          <label
-            htmlFor="score"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Score (e.g., &quot;6-4, 6-2&quot;)
-          </label>
-          <input
-            type="text"
-            id="score"
-            value={score}
-            onChange={(e) => setScore(e.target.value)}
-            placeholder="6-4, 6-2"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="pointsTeam1"
-              className="block text-sm font-medium text-gray-700 mb-2"
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Sets</h2>
+            <button
+              type="button"
+              onClick={addSet}
+              disabled={sets.length >= 5}
+              className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 disabled:opacity-50"
             >
-              Team 1 Points
-            </label>
-            <input
-              type="number"
-              id="pointsTeam1"
-              value={pointsTeam1}
-              onChange={(e) => setPointsTeam1(e.target.value)}
-              min="0"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-              disabled={isSubmitting}
-            />
+              <PlusIcon className="h-4 w-4" />
+              Add Set
+            </button>
           </div>
 
-          <div>
-            <label
-              htmlFor="pointsTeam2"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Team 2 Points
-            </label>
-            <input
-              type="number"
-              id="pointsTeam2"
-              value={pointsTeam2}
-              onChange={(e) => setPointsTeam2(e.target.value)}
-              min="0"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-              disabled={isSubmitting}
-            />
+          <div className="space-y-4">
+            {sets.map((set, index) => (
+              <div
+                key={index}
+                className="border border-gray-200 rounded-lg p-4"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-medium text-gray-900">Set {index + 1}</h3>
+                  {sets.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSet(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <MinusIcon className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-blue-700 mb-2">
+                      Team 1 Games
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={set.team1}
+                      onChange={(e) =>
+                        updateSet(index, "team1", parseInt(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-red-700 mb-2">
+                      Team 2 Games
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={set.team2}
+                      onChange={(e) =>
+                        updateSet(index, "team2", parseInt(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Match Summary */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-medium text-gray-900 mb-2">Match Summary</h3>
+            <div className="text-sm text-gray-600 space-y-1">
+              <div>Sets: {formatSetsDisplay()}</div>
+              <div>
+                Sets Won: Team 1 ({setsTeam1}) - Team 2 ({setsTeam2})
+              </div>
+              <div>
+                Total Games: Team 1 (
+                {sets.reduce((sum, set) => sum + set.team1, 0)}) - Team 2 (
+                {sets.reduce((sum, set) => sum + set.team2, 0)})
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={
-          isSubmitting || team1Players.length !== 2 || team2Players.length !== 2
-        }
+        disabled={isSubmitting || !isValidMatch()}
         className="w-full bg-emerald-600 text-white py-4 px-6 rounded-lg font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {isSubmitting ? "Recording Match..." : "Record Match"}

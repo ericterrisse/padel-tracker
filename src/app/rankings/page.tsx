@@ -16,42 +16,58 @@ async function getRankingsData() {
     .map((player) => {
       let wins = 0;
       let losses = 0;
-      let totalPoints = 0;
-      let totalPointsAgainst = 0;
+      let totalSetsWon = 0;
+      let totalSetsLost = 0;
+      let totalGamesWon = 0;
+      let totalGamesLost = 0;
 
       matches.forEach((match) => {
         const isInTeam1 = match.team1Players.some((p) => p.id === player.id);
         const isInTeam2 = match.team2Players.some((p) => p.id === player.id);
 
         if (isInTeam1) {
-          totalPoints += match.pointsTeam1;
-          totalPointsAgainst += match.pointsTeam2;
-          if (match.pointsTeam1 > match.pointsTeam2) wins++;
+          totalSetsWon += match.setsTeam1;
+          totalSetsLost += match.setsTeam2;
+          totalGamesWon += match.gamesTeam1;
+          totalGamesLost += match.gamesTeam2;
+          if (match.setsTeam1 > match.setsTeam2) wins++;
           else losses++;
         } else if (isInTeam2) {
-          totalPoints += match.pointsTeam2;
-          totalPointsAgainst += match.pointsTeam1;
-          if (match.pointsTeam2 > match.pointsTeam1) wins++;
+          totalSetsWon += match.setsTeam2;
+          totalSetsLost += match.setsTeam1;
+          totalGamesWon += match.gamesTeam2;
+          totalGamesLost += match.gamesTeam1;
+          if (match.setsTeam2 > match.setsTeam1) wins++;
           else losses++;
         }
       });
 
-      const totalGames = wins + losses;
-      const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
+      const totalMatches = wins + losses;
+      const winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : 0;
+      const setWinRate =
+        totalSetsWon + totalSetsLost > 0
+          ? (totalSetsWon / (totalSetsWon + totalSetsLost)) * 100
+          : 0;
 
       return {
         player,
         wins,
         losses,
-        totalGames,
+        totalMatches,
         winRate,
-        totalPoints,
-        totalPointsAgainst,
-        pointDifference: totalPoints - totalPointsAgainst,
+        totalSetsWon,
+        totalSetsLost,
+        setWinRate,
+        totalGamesWon,
+        totalGamesLost,
+        gameDifference: totalGamesWon - totalGamesLost,
       };
     })
     .sort(
-      (a, b) => b.winRate - a.winRate || b.pointDifference - a.pointDifference
+      (a, b) =>
+        b.winRate - a.winRate ||
+        b.setWinRate - a.setWinRate ||
+        b.gameDifference - a.gameDifference
     );
 
   // Calculate pair stats
@@ -61,8 +77,10 @@ async function getRankingsData() {
       players: string[];
       wins: number;
       losses: number;
-      totalPoints: number;
-      totalPointsAgainst: number;
+      totalSetsWon: number;
+      totalSetsLost: number;
+      totalGamesWon: number;
+      totalGamesLost: number;
     }
   >();
 
@@ -79,15 +97,19 @@ async function getRankingsData() {
         players: team1Names,
         wins: 0,
         losses: 0,
-        totalPoints: 0,
-        totalPointsAgainst: 0,
+        totalSetsWon: 0,
+        totalSetsLost: 0,
+        totalGamesWon: 0,
+        totalGamesLost: 0,
       });
     }
 
     const team1Stats = pairStatsMap.get(team1Key)!;
-    team1Stats.totalPoints += match.pointsTeam1;
-    team1Stats.totalPointsAgainst += match.pointsTeam2;
-    if (match.pointsTeam1 > match.pointsTeam2) {
+    team1Stats.totalSetsWon += match.setsTeam1;
+    team1Stats.totalSetsLost += match.setsTeam2;
+    team1Stats.totalGamesWon += match.gamesTeam1;
+    team1Stats.totalGamesLost += match.gamesTeam2;
+    if (match.setsTeam1 > match.setsTeam2) {
       team1Stats.wins++;
     } else {
       team1Stats.losses++;
@@ -105,15 +127,19 @@ async function getRankingsData() {
         players: team2Names,
         wins: 0,
         losses: 0,
-        totalPoints: 0,
-        totalPointsAgainst: 0,
+        totalSetsWon: 0,
+        totalSetsLost: 0,
+        totalGamesWon: 0,
+        totalGamesLost: 0,
       });
     }
 
     const team2Stats = pairStatsMap.get(team2Key)!;
-    team2Stats.totalPoints += match.pointsTeam2;
-    team2Stats.totalPointsAgainst += match.pointsTeam1;
-    if (match.pointsTeam2 > match.pointsTeam1) {
+    team2Stats.totalSetsWon += match.setsTeam2;
+    team2Stats.totalSetsLost += match.setsTeam1;
+    team2Stats.totalGamesWon += match.gamesTeam2;
+    team2Stats.totalGamesLost += match.gamesTeam1;
+    if (match.setsTeam2 > match.setsTeam1) {
       team2Stats.wins++;
     } else {
       team2Stats.losses++;
@@ -123,15 +149,23 @@ async function getRankingsData() {
   const pairStats = Array.from(pairStatsMap.values())
     .map((stats) => ({
       ...stats,
-      totalGames: stats.wins + stats.losses,
+      totalMatches: stats.wins + stats.losses,
       winRate:
         stats.wins + stats.losses > 0
           ? (stats.wins / (stats.wins + stats.losses)) * 100
           : 0,
-      pointDifference: stats.totalPoints - stats.totalPointsAgainst,
+      setWinRate:
+        stats.totalSetsWon + stats.totalSetsLost > 0
+          ? (stats.totalSetsWon / (stats.totalSetsWon + stats.totalSetsLost)) *
+            100
+          : 0,
+      gameDifference: stats.totalGamesWon - stats.totalGamesLost,
     }))
     .sort(
-      (a, b) => b.winRate - a.winRate || b.pointDifference - a.pointDifference
+      (a, b) =>
+        b.winRate - a.winRate ||
+        b.setWinRate - a.setWinRate ||
+        b.gameDifference - a.gameDifference
     );
 
   return { individualStats, pairStats };
@@ -172,9 +206,15 @@ export default async function RankingsPage() {
                     <h3 className="font-medium text-gray-900">
                       {stat.player.name}
                     </h3>
-                    <p className="text-sm text-gray-500">
-                      {stat.wins}W - {stat.losses}L
-                    </p>
+                    <div className="text-sm text-gray-500 space-y-1">
+                      <div>
+                        {stat.wins}W - {stat.losses}L
+                      </div>
+                      <div>
+                        Sets: {stat.totalSetsWon}-{stat.totalSetsLost} (
+                        {stat.setWinRate.toFixed(1)}%)
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -183,8 +223,8 @@ export default async function RankingsPage() {
                     {stat.winRate.toFixed(1)}%
                   </div>
                   <div className="text-sm text-gray-500">
-                    {stat.pointDifference > 0 ? "+" : ""}
-                    {stat.pointDifference}
+                    {stat.gameDifference > 0 ? "+" : ""}
+                    {stat.gameDifference} games
                   </div>
                 </div>
               </div>
@@ -219,9 +259,15 @@ export default async function RankingsPage() {
                     <h3 className="font-medium text-gray-900">
                       {stat.players.join(" & ")}
                     </h3>
-                    <p className="text-sm text-gray-500">
-                      {stat.wins}W - {stat.losses}L
-                    </p>
+                    <div className="text-sm text-gray-500 space-y-1">
+                      <div>
+                        {stat.wins}W - {stat.losses}L
+                      </div>
+                      <div>
+                        Sets: {stat.totalSetsWon}-{stat.totalSetsLost} (
+                        {stat.setWinRate.toFixed(1)}%)
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -230,8 +276,8 @@ export default async function RankingsPage() {
                     {stat.winRate.toFixed(1)}%
                   </div>
                   <div className="text-sm text-gray-500">
-                    {stat.pointDifference > 0 ? "+" : ""}
-                    {stat.pointDifference}
+                    {stat.gameDifference > 0 ? "+" : ""}
+                    {stat.gameDifference} games
                   </div>
                 </div>
               </div>

@@ -6,18 +6,22 @@ import { revalidatePath } from 'next/cache'
 type AddMatchData = {
   team1PlayerIds: string[]
   team2PlayerIds: string[]
-  score: string
-  pointsTeam1: number
-  pointsTeam2: number
+  sets: string // JSON string of sets array
+  setsTeam1: number
+  setsTeam2: number
+  gamesTeam1: number
+  gamesTeam2: number
 }
 
 export async function addMatch(data: AddMatchData) {
   try {
     await prisma.match.create({
       data: {
-        score: data.score,
-        pointsTeam1: data.pointsTeam1,
-        pointsTeam2: data.pointsTeam2,
+        sets: data.sets,
+        setsTeam1: data.setsTeam1,
+        setsTeam2: data.setsTeam2,
+        gamesTeam1: data.gamesTeam1,
+        gamesTeam2: data.gamesTeam2,
         team1Players: {
           connect: data.team1PlayerIds.map(id => ({ id }))
         },
