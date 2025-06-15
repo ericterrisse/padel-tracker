@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  // Relations for matches
+  team1Matches Match[] @relation("Team1Players")
+  team2Matches Match[] @relation("Team2Players")
+}
+
+model Match {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  score       String // e.g., "6-4, 6-2"
+  pointsTeam1 Int
+  pointsTeam2 Int
+  createdAt   DateTime @default(now())
+
+  // Team 1 players (2 players)
+  team1Players Player[] @relation("Team1Players")
+
+  // Team 2 players (2 players)
+  team2Players Player[] @relation("Team2Players")
+}

@@ -1,24 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Padel Tracker
+
+A mobile-first Progressive Web App (PWA) for tracking padel matches and rankings among friends.
+
+## Features
+
+- **Players Management**: Add and manage players
+- **Pair Generation**: Generate random pairs from selected players
+- **Match Recording**: Record match results with teams and scores
+- **Rankings**: View individual and pair statistics
+
+## Tech Stack
+
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- Prisma with SQLite
+- Heroicons
 
 ## Getting Started
 
-First, run the development server:
-
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Set up the database:
+```bash
+npx prisma migrate dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run the development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Usage
+
+1. **Add Players**: Start by adding players in the Players tab
+2. **Generate Pairs**: Use the Pairs tab to select 4 players and generate random pairs
+3. **Record Matches**: Record match results in the Matches tab
+4. **View Rankings**: Check individual and pair rankings in the Rankings tab
+
+## PWA Features
+
+- Mobile-first responsive design
+- Offline capability
+- Install as app on mobile devices
+- Optimized for touch interactions
+
+## Database Schema
+
+- **Player**: id, name, createdAt
+- **Match**: id, date, score, pointsTeam1, pointsTeam2, team1Players[], team2Players[]
 
 ## Learn More
 
