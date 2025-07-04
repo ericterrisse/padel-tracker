@@ -101,6 +101,9 @@ async function createMatch(formData: FormData) {
   const superTeam2 = formData.get("superTeam2")
     ? parseInt(formData.get("superTeam2") as string)
     : null;
+  const priceEur = formData.get("priceEur")
+    ? parseFloat(formData.get("priceEur") as string)
+    : 0.0;
 
   if (
     !team1Id ||
@@ -120,6 +123,7 @@ async function createMatch(formData: FormData) {
       setsTeam2,
       superTeam1,
       superTeam2,
+      priceEur,
     },
   });
 

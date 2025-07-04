@@ -8,6 +8,7 @@ type Match = {
   setsTeam2: number;
   superTeam1: number | null;
   superTeam2: number | null;
+  priceEur: number;
   team1: {
     id: string;
     name: string;
@@ -121,7 +122,7 @@ export default async function MatchesPage() {
                   className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:bg-gray-800 transition-all duration-200"
                 >
                   {/* Date */}
-                  <div className="bg-gray-800 px-6 py-3 border-b border-gray-700 text-center">
+                  <div className="bg-gray-800 px-6 py-3 border-b border-gray-700 flex items-center justify-between">
                     <div className="text-white font-medium">
                       {new Date(match.date).toLocaleDateString("en-US", {
                         weekday: "long",
@@ -130,6 +131,11 @@ export default async function MatchesPage() {
                         day: "numeric",
                       })}
                     </div>
+                    {match.priceEur > 0 && (
+                      <div className="text-emerald-400 font-medium">
+                        €{match.priceEur.toFixed(2)}
+                      </div>
+                    )}
                   </div>
 
                   {/* Teams */}

@@ -14,6 +14,7 @@ model Player {
   id        String   @id @default(cuid())
   name      String   @unique
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations for pairs
   pair1 Pair[] @relation("Player1")
@@ -24,25 +25,30 @@ model Pair {
   id        String   @id @default(cuid())
   name      String   @unique
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Two players in the pair
   player1Id String
-  player1   Player @relation("Player1", fields: [player1Id], references: [id])
+  player1   Player @relation("Player1", fields: [player1Id], references: [id], onDelete: Cascade)
   player2Id String
-  player2   Player @relation("Player2", fields: [player2Id], references: [id])
+  player2   Player @relation("Player2", fields: [player2Id], references: [id], onDelete: Cascade)
 
   // Relations for matches
   team1Matches Match[] @relation("Team1")
   team2Matches Match[] @relation("Team2")
+
+  @@unique([player1Id, player2Id])
 }
 
 model Set {
-  id            String @id @default(cuid())
+  id            String   @id @default(cuid())
   index         Int // Set number (1, 2, 3, etc.)
   team1Games    Int // Games won by team 1
   team2Games    Int // Games won by team 2
   tiebreakTeam1 Int? // Optional tiebreak points for team 1
   tiebreakTeam2 Int? // Optional tiebreak points for team 2
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relation to match
   matchId String
@@ -56,13 +62,15 @@ model Match {
   setsTeam2  Int // Number of sets won by team 2
   superTeam1 Int? // Optional super tiebreak points for team 1
   superTeam2 Int? // Optional super tiebreak points for team 2
+  priceEur   Float    @default(0.0)
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Team pairs
   team1Id String
-  team1   Pair   @relation("Team1", fields: [team1Id], references: [id])
+  team1   Pair   @relation("Team1", fields: [team1Id], references: [id], onDelete: Cascade)
   team2Id String
-  team2   Pair   @relation("Team2", fields: [team2Id], references: [id])
+  team2   Pair   @relation("Team2", fields: [team2Id], references: [id], onDelete: Cascade)
 
   // Sets in the match
   sets Set[]

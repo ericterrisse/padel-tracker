@@ -162,6 +162,17 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
           />
         </div>
 
+        <div>
+          <input
+            name="priceEur"
+            type="number"
+            step="0.01"
+            placeholder="Match price in EUR (optional)"
+            min="0"
+            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
+
         <button
           type="submit"
           className="w-full bg-emerald-500 text-white py-3 rounded-xl font-medium hover:bg-emerald-600 transition-colors"
