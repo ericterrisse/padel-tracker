@@ -54,7 +54,7 @@ export default function MoneyTrackingChart({
 
   // Create chart data
   const chartData = sortedDates.map((dateStr) => {
-    const dataPoint: any = { date: dateStr };
+    const dataPoint: Record<string, string | number> = { date: dateStr };
 
     playerMoneyStats.forEach((player) => {
       // Find the latest balance for this player up to this date
@@ -80,7 +80,7 @@ export default function MoneyTrackingChart({
     });
   };
 
-  const formatTooltip = (value: any, name: string) => {
+  const formatTooltip = (value: number, name: string) => {
     return [`€${value.toFixed(2)}`, name];
   };
 

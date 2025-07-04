@@ -32,8 +32,39 @@ type PlayerMoneyStats = {
   }[];
 };
 
+// Add Match type definition
+type Match = {
+  id: string;
+  date: Date;
+  setsTeam1: number;
+  setsTeam2: number;
+  superTeam1: number | null;
+  superTeam2: number | null;
+  priceEur: number;
+  team1: {
+    id: string;
+    name: string;
+    player1: { id: string; name: string };
+    player2: { id: string; name: string };
+  };
+  team2: {
+    id: string;
+    name: string;
+    player1: { id: string; name: string };
+    player2: { id: string; name: string };
+  };
+  sets: {
+    id: string;
+    index: number;
+    team1Games: number;
+    team2Games: number;
+    tiebreakTeam1: number | null;
+    tiebreakTeam2: number | null;
+  }[];
+};
+
 // Helper function to determine match winner (same as matches page)
-function determineMatchWinner(match: any) {
+function determineMatchWinner(match: Match) {
   if (match.setsTeam1 !== match.setsTeam2) {
     return match.setsTeam1 > match.setsTeam2;
   }
@@ -173,6 +204,7 @@ async function getPlayerMoneyStats(): Promise<PlayerMoneyStats[]> {
           player2: true,
         },
       },
+      sets: true,
     },
     orderBy: { date: "asc" },
   });
@@ -371,7 +403,7 @@ export default async function RankingsPage() {
 
                 {/* Player Money Stats */}
                 <div className="space-y-4">
-                  {playerMoneyStats.map((player, index) => (
+                  {playerMoneyStats.map((player) => (
                     <div
                       key={player.playerId}
                       className={`flex items-center justify-between p-4 bg-gray-900 border border-gray-800 rounded-xl hover:bg-gray-800 transition-all duration-200 ${
