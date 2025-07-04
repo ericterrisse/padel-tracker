@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { TrophyIcon } from "@heroicons/react/24/outline";
 
+// Remove force-dynamic - this is a read-only page that can be cached
+// export const dynamic = "force-dynamic";
+
 type Match = {
   id: string;
   date: Date;

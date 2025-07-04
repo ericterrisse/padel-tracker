@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { TrophyIcon } from "@heroicons/react/24/outline";
 import MoneyTrackingChart from "@/components/MoneyTrackingChart";
 
+// Remove force-dynamic - this is a read-only page that can be cached
+// export const dynamic = "force-dynamic";
+
 type PairStats = {
   pair: {
     id: string;

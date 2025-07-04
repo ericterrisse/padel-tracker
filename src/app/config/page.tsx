@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import MatchForm from "@/components/MatchForm";
 import DeleteMatchButton from "@/components/DeleteMatchButton";
+
+// Remove force-dynamic - let Next.js cache intelligently
+// export const dynamic = "force-dynamic";
 
 async function getPlayers() {
   return await prisma.player.findMany({
@@ -50,6 +54,11 @@ async function createPlayer(formData: FormData) {
   await prisma.player.create({
     data: { name },
   });
+
+  // Revalidate specific paths that show player data
+  revalidatePath("/config");
+  revalidatePath("/matches");
+  revalidatePath("/rankings");
   redirect("/config");
 }
 
@@ -68,6 +77,11 @@ async function createPair(formData: FormData) {
       player2Id,
     },
   });
+
+  // Revalidate specific paths that show pair data
+  revalidatePath("/config");
+  revalidatePath("/matches");
+  revalidatePath("/rankings");
   redirect("/config");
 }
 
@@ -86,6 +100,10 @@ async function deleteMatch(formData: FormData) {
     where: { id: matchId },
   });
 
+  // Revalidate all pages that show match data
+  revalidatePath("/config");
+  revalidatePath("/matches");
+  revalidatePath("/rankings");
   redirect("/config");
 }
 
@@ -153,6 +171,10 @@ async function createMatch(formData: FormData) {
     });
   }
 
+  // Revalidate all pages that show match data
+  revalidatePath("/config");
+  revalidatePath("/matches");
+  revalidatePath("/rankings");
   redirect("/config");
 }
 
