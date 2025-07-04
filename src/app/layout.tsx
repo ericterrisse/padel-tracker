@@ -6,13 +6,13 @@ import Navigation from "@/components/Navigation";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Padel Tracker",
-  description: "Track padel matches and rankings with friends",
+  title: "Seguidor de Pàdel",
+  description: "Segueix partits de pàdel i rànquings amb amics",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Padel Tracker",
+    title: "Seguidor de Pàdel",
   },
 };
 
@@ -26,13 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="ca">
       <head>
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Padel Tracker" />
+        <meta name="apple-mobile-web-app-title" content="Seguidor de Pàdel" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={`${inter.className} bg-gray-950 min-h-screen`}>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import MatchForm from "@/components/MatchForm";
 import DeleteMatchButton from "@/components/DeleteMatchButton";
+import DeleteButton from "@/components/DeleteButton";
 
 // Remove force-dynamic - let Next.js cache intelligently
 // export const dynamic = "force-dynamic";
@@ -178,6 +179,80 @@ async function createMatch(formData: FormData) {
   redirect("/config");
 }
 
+async function deletePlayer(formData: FormData) {
+  "use server";
+  const playerId = formData.get("playerId") as string;
+  if (!playerId) return;
+
+  try {
+    // Check if player is used in any pairs
+    const pairsUsingPlayer = await prisma.pair.findMany({
+      where: {
+        OR: [{ player1Id: playerId }, { player2Id: playerId }],
+      },
+    });
+
+    if (pairsUsingPlayer.length > 0) {
+      // Player is used in pairs, cannot delete
+      // In a real app, you'd want to show an error message
+      // For now, we'll just return without deleting
+      return;
+    }
+
+    // Delete the player
+    await prisma.player.delete({
+      where: { id: playerId },
+    });
+
+    // Revalidate all pages that show player data
+    revalidatePath("/config");
+    revalidatePath("/matches");
+    revalidatePath("/rankings");
+  } catch (error) {
+    // Handle error (player might be referenced in matches/pairs)
+    console.error("Error deleting player:", error);
+  }
+
+  redirect("/config");
+}
+
+async function deletePair(formData: FormData) {
+  "use server";
+  const pairId = formData.get("pairId") as string;
+  if (!pairId) return;
+
+  try {
+    // Check if pair is used in any matches
+    const matchesUsingPair = await prisma.match.findMany({
+      where: {
+        OR: [{ team1Id: pairId }, { team2Id: pairId }],
+      },
+    });
+
+    if (matchesUsingPair.length > 0) {
+      // Pair is used in matches, cannot delete
+      // In a real app, you'd want to show an error message
+      // For now, we'll just return without deleting
+      return;
+    }
+
+    // Delete the pair
+    await prisma.pair.delete({
+      where: { id: pairId },
+    });
+
+    // Revalidate all pages that show pair data
+    revalidatePath("/config");
+    revalidatePath("/matches");
+    revalidatePath("/rankings");
+  } catch (error) {
+    // Handle error (pair might be referenced in matches)
+    console.error("Error deleting pair:", error);
+  }
+
+  redirect("/config");
+}
+
 export default async function ConfigPage() {
   const players = await getPlayers();
   const pairs = await getPairs();
@@ -186,15 +261,17 @@ export default async function ConfigPage() {
   return (
     <div className="min-h-screen bg-gray-950 p-6">
       <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-3xl font-light text-white">Configuration</h1>
+        <h1 className="text-3xl font-light text-white">Configuració</h1>
 
         {/* Create Player */}
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-          <h2 className="text-xl font-medium text-white mb-4">Add Player</h2>
+          <h2 className="text-xl font-medium text-white mb-4">
+            Afegir Jugador
+          </h2>
           <form action={createPlayer} className="flex gap-4">
             <input
               name="name"
-              placeholder="Player name"
+              placeholder="Nom del jugador"
               className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               required
             />
@@ -202,18 +279,18 @@ export default async function ConfigPage() {
               type="submit"
               className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-emerald-600 transition-colors"
             >
-              Add
+              Afegir
             </button>
           </form>
         </div>
 
         {/* Create Pair */}
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-          <h2 className="text-xl font-medium text-white mb-4">Create Pair</h2>
+          <h2 className="text-xl font-medium text-white mb-4">Crear Parella</h2>
           <form action={createPair} className="space-y-4">
             <input
               name="name"
-              placeholder="Pair name"
+              placeholder="Nom de la parella"
               className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               required
             />
@@ -223,7 +300,7 @@ export default async function ConfigPage() {
                 className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 required
               >
-                <option value="">Select Player 1</option>
+                <option value="">Selecciona Jugador 1</option>
                 {players.map((player) => (
                   <option key={player.id} value={player.id}>
                     {player.name}
@@ -235,7 +312,7 @@ export default async function ConfigPage() {
                 className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 required
               >
-                <option value="">Select Player 2</option>
+                <option value="">Selecciona Jugador 2</option>
                 {players.map((player) => (
                   <option key={player.id} value={player.id}>
                     {player.name}
@@ -247,7 +324,7 @@ export default async function ConfigPage() {
               type="submit"
               className="w-full bg-emerald-500 text-white py-3 rounded-xl font-medium hover:bg-emerald-600 transition-colors"
             >
-              Create Pair
+              Crear Parella
             </button>
           </form>
         </div>
@@ -259,11 +336,20 @@ export default async function ConfigPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Players */}
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <h3 className="text-lg font-medium text-white mb-4">Players</h3>
+            <h3 className="text-lg font-medium text-white mb-4">Jugadors</h3>
             <div className="space-y-2">
               {players.map((player) => (
-                <div key={player.id} className="text-gray-300">
-                  {player.name}
+                <div
+                  key={player.id}
+                  className="flex items-center justify-between text-gray-300 bg-gray-800 p-3 rounded-lg"
+                >
+                  <span>{player.name}</span>
+                  <DeleteButton
+                    id={player.id}
+                    name={player.name}
+                    onDelete={deletePlayer}
+                    type="player"
+                  />
                 </div>
               ))}
             </div>
@@ -271,14 +357,25 @@ export default async function ConfigPage() {
 
           {/* Pairs */}
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <h3 className="text-lg font-medium text-white mb-4">Pairs</h3>
+            <h3 className="text-lg font-medium text-white mb-4">Parelles</h3>
             <div className="space-y-2">
               {pairs.map((pair) => (
-                <div key={pair.id} className="text-gray-300">
-                  <div className="font-medium">{pair.name}</div>
-                  <div className="text-sm text-gray-400">
-                    {pair.player1.name} & {pair.player2.name}
+                <div
+                  key={pair.id}
+                  className="flex items-center justify-between text-gray-300 bg-gray-800 p-3 rounded-lg"
+                >
+                  <div>
+                    <div className="font-medium">{pair.name}</div>
+                    <div className="text-sm text-gray-400">
+                      {pair.player1.name} & {pair.player2.name}
+                    </div>
                   </div>
+                  <DeleteButton
+                    id={pair.id}
+                    name={pair.name}
+                    onDelete={deletePair}
+                    type="pair"
+                  />
                 </div>
               ))}
             </div>
@@ -287,9 +384,9 @@ export default async function ConfigPage() {
 
         {/* Matches Management */}
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-          <h3 className="text-lg font-medium text-white mb-4">Matches</h3>
+          <h3 className="text-lg font-medium text-white mb-4">Partits</h3>
           {matches.length === 0 ? (
-            <p className="text-gray-400">No matches recorded yet</p>
+            <p className="text-gray-400">Encara no hi ha partits registrats</p>
           ) : (
             <div className="space-y-4">
               {matches.map((match) => {

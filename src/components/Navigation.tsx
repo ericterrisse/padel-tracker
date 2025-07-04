@@ -13,13 +13,13 @@ const Navigation = () => {
 
   const navItems = [
     {
-      name: "Matches",
+      name: "Partits",
       href: "/matches",
       icon: TrophyIcon,
       iconSolid: TrophyIconSolid,
     },
     {
-      name: "Rankings",
+      name: "Rànquings",
       href: "/rankings",
       icon: ChartBarIcon,
       iconSolid: ChartBarIconSolid,

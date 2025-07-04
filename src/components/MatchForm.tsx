@@ -31,7 +31,7 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
 
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-      <h2 className="text-xl font-medium text-white mb-4">Record Match</h2>
+      <h2 className="text-xl font-medium text-white mb-4">Registrar Partit</h2>
       <form action={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <select
@@ -39,7 +39,7 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
             className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             required
           >
-            <option value="">Select Team 1</option>
+            <option value="">Selecciona Equip 1</option>
             {pairs.map((pair) => (
               <option key={pair.id} value={pair.id}>
                 {pair.name}
@@ -51,7 +51,7 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
             className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             required
           >
-            <option value="">Select Team 2</option>
+            <option value="">Selecciona Equip 2</option>
             {pairs.map((pair) => (
               <option key={pair.id} value={pair.id}>
                 {pair.name}
@@ -64,7 +64,7 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
           <input
             name="setsTeam1"
             type="number"
-            placeholder="Sets won by Team 1"
+            placeholder="Sets guanyats per l'Equip 1"
             min="0"
             max="3"
             className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -74,7 +74,7 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
           <input
             name="setsTeam2"
             type="number"
-            placeholder="Sets won by Team 2"
+            placeholder="Sets guanyats per l'Equip 2"
             min="0"
             max="3"
             className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -86,7 +86,9 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
         {/* Dynamic Set Inputs */}
         {totalSets > 0 && (
           <div className="bg-gray-800 border border-gray-700 rounded-xl p-4">
-            <h3 className="text-white font-medium mb-4">Set Scores</h3>
+            <h3 className="text-white font-medium mb-4">
+              Puntuacions dels Sets
+            </h3>
             <div className="space-y-4">
               {Array.from({ length: totalSets }, (_, i) => {
                 const setNumber = i + 1;
@@ -99,14 +101,14 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
                         Set {setNumber}
                       </span>
                       <span className="text-xs text-gray-400">
-                        (Team {isTeam1Win ? "1" : "2"} won)
+                        (Equip {isTeam1Win ? "1" : "2"} va guanyar)
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-4 mb-2">
                       <input
                         name={`set${setNumber}Team1Games`}
                         type="number"
-                        placeholder="Team 1 games"
+                        placeholder="Jocs Equip 1"
                         min="0"
                         max="7"
                         className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -115,7 +117,7 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
                       <input
                         name={`set${setNumber}Team2Games`}
                         type="number"
-                        placeholder="Team 2 games"
+                        placeholder="Jocs Equip 2"
                         min="0"
                         max="7"
                         className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -126,15 +128,17 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
                       <input
                         name={`set${setNumber}TiebreakTeam1`}
                         type="number"
-                        placeholder="Tiebreak Team 1 (optional)"
+                        placeholder="Tiebreak Equip 1 (opcional)"
                         min="0"
+                        max="20"
                         className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                       <input
                         name={`set${setNumber}TiebreakTeam2`}
                         type="number"
-                        placeholder="Tiebreak Team 2 (optional)"
+                        placeholder="Tiebreak Equip 2 (opcional)"
                         min="0"
+                        max="20"
                         className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
@@ -145,30 +149,34 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
           </div>
         )}
 
+        {/* Super Tiebreak */}
         <div className="grid grid-cols-2 gap-4">
           <input
             name="superTeam1"
             type="number"
-            placeholder="Super tiebreak Team 1 (optional)"
+            placeholder="Super Tiebreak Equip 1 (opcional)"
             min="0"
+            max="20"
             className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
           <input
             name="superTeam2"
             type="number"
-            placeholder="Super tiebreak Team 2 (optional)"
+            placeholder="Super Tiebreak Equip 2 (opcional)"
             min="0"
+            max="20"
             className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
+        {/* Price */}
         <div>
           <input
             name="priceEur"
             type="number"
             step="0.01"
-            placeholder="Match price in EUR (optional)"
             min="0"
+            placeholder="Preu del partit (€)"
             className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
@@ -177,7 +185,7 @@ export default function MatchForm({ pairs, onSubmit }: MatchFormProps) {
           type="submit"
           className="w-full bg-emerald-500 text-white py-3 rounded-xl font-medium hover:bg-emerald-600 transition-colors"
         >
-          Record Match
+          Registrar Partit
         </button>
       </form>
     </div>

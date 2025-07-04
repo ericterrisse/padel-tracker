@@ -102,7 +102,7 @@ export default async function MatchesPage() {
   return (
     <div className="min-h-[90vh] bg-gray-950 p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-light mb-6 text-white">Matches</h1>
+        <h1 className="text-3xl font-light mb-6 text-white">Partits</h1>
 
         <div className="space-y-6">
           {matches.length === 0 ? (
@@ -127,11 +127,10 @@ export default async function MatchesPage() {
                   {/* Date */}
                   <div className="bg-gray-800 px-6 py-3 border-b border-gray-700 flex items-center justify-between">
                     <div className="text-white font-medium">
-                      {new Date(match.date).toLocaleDateString("en-US", {
-                        weekday: "long",
+                      {new Date(match.date).toLocaleDateString("cat", {
                         year: "numeric",
-                        month: "long",
-                        day: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
                       })}
                     </div>
                     {match.priceEur > 0 && (

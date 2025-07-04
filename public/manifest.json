@@ -1,7 +1,7 @@
 {
-  "name": "Padel Tracker",
-  "short_name": "Padel Tracker",
-  "description": "Track padel matches and rankings with friends",
+  "name": "Seguidor de Pàdel",
+  "short_name": "Seguidor de Pàdel",
+  "description": "Segueix partits de pàdel i rànquings amb amics",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#030712",

@@ -298,22 +298,24 @@ export default async function RankingsPage() {
   return (
     <div className="min-h-[90vh] bg-gray-950 p-6">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-light text-white mb-8">Rankings</h1>
+        <h1 className="text-3xl font-light text-white mb-8">Rànquings</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Pair Rankings */}
           <div>
             <h2 className="text-2xl font-medium text-white mb-6">
-              Pair Rankings
+              Rànquings de Parelles
             </h2>
             {pairStats.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-gray-600 mb-4">
                   <TrophyIcon className="h-16 w-16 mx-auto" />
                 </div>
-                <p className="text-gray-400 text-lg">No matches recorded yet</p>
+                <p className="text-gray-400 text-lg">
+                  Encara no hi ha partits registrats
+                </p>
                 <p className="text-gray-600 text-sm mt-2">
-                  Record your first match to see rankings
+                  Registra alguns partits per veure els rànquings
                 </p>
               </div>
             ) : (
@@ -353,7 +355,7 @@ export default async function RankingsPage() {
                           {stat.pair.player1.name} & {stat.pair.player2.name}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {stat.matches} matches • {stat.wins}W - {stat.losses}L
+                          {stat.matches} partits • {stat.wins}V - {stat.losses}D
                         </div>
                       </div>
                     </div>
@@ -367,11 +369,7 @@ export default async function RankingsPage() {
                         {stat.gameWinRate.toFixed(1)}%
                       </div>
                       <div className="text-sm text-gray-400">
-                        {stat.totalGamesWon}/{stat.totalGamesPlayed} games
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {stat.gameDifference > 0 ? "+" : ""}
-                        {stat.gameDifference} diff
+                        {stat.totalGamesWon}/{stat.totalGamesPlayed} jocs
                       </div>
                     </div>
                   </div>
@@ -383,15 +381,17 @@ export default async function RankingsPage() {
           {/* Money Tracking */}
           <div>
             <h2 className="text-2xl font-medium text-white mb-6">
-              Money Tracking
+              Rànquing de Diners
             </h2>
             {playerMoneyStats.length === 0 ||
             playerMoneyStats.every((p) => p.matchHistory.length === 0) ? (
               <div className="text-center py-20">
                 <div className="text-gray-600 mb-4">💰</div>
-                <p className="text-gray-400 text-lg">No money matches yet</p>
+                <p className="text-gray-400 text-lg">
+                  Encara no hi ha partits amb preus
+                </p>
                 <p className="text-gray-600 text-sm mt-2">
-                  Record matches with prices to track money
+                  Registra partits amb preus per veure el rànquing de diners
                 </p>
               </div>
             ) : (
@@ -399,7 +399,7 @@ export default async function RankingsPage() {
                 {/* Money Chart */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
                   <h3 className="text-lg font-medium text-white mb-4">
-                    Balance Over Time
+                    Balanç al llarg del temps
                   </h3>
                   <MoneyTrackingChart playerMoneyStats={playerMoneyStats} />
                 </div>
@@ -422,8 +422,8 @@ export default async function RankingsPage() {
                           {player.playerName}
                         </h4>
                         <div className="text-sm text-gray-400">
-                          Earned: €{player.totalEarned.toFixed(2)} • Lost: €
-                          {player.totalLost.toFixed(2)}
+                          Guanyat: {player.totalEarned.toFixed(2)}€ • Perdut:{" "}
+                          {player.totalLost.toFixed(2)}€
                         </div>
                       </div>
                       <div className="text-right">
