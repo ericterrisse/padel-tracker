@@ -17,10 +17,6 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: "#10b981",
 };
 
@@ -39,8 +35,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Padel Tracker" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={`${inter.className} bg-gray-50 min-h-screen`}>
-        <div className="max-w-md mx-auto bg-white min-h-screen shadow-lg">
+      <body className={`${inter.className} bg-gray-950 min-h-screen`}>
+        <div className="min-h-screen bg-gray-950">
           <main className="pb-20">{children}</main>
           <Navigation />
         </div>

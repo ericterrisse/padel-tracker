@@ -2,15 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { TrophyIcon, ChartBarIcon } from "@heroicons/react/24/outline";
 import {
-  UserGroupIcon,
-  UsersIcon,
-  TrophyIcon,
-  ChartBarIcon,
-} from "@heroicons/react/24/outline";
-import {
-  UserGroupIcon as UserGroupIconSolid,
-  UsersIcon as UsersIconSolid,
   TrophyIcon as TrophyIconSolid,
   ChartBarIcon as ChartBarIconSolid,
 } from "@heroicons/react/24/solid";
@@ -19,18 +12,6 @@ const Navigation = () => {
   const pathname = usePathname();
 
   const navItems = [
-    {
-      name: "Players",
-      href: "/players",
-      icon: UserGroupIcon,
-      iconSolid: UserGroupIconSolid,
-    },
-    {
-      name: "Pairs",
-      href: "/pairs",
-      icon: UsersIcon,
-      iconSolid: UsersIconSolid,
-    },
     {
       name: "Matches",
       href: "/matches",
@@ -46,29 +27,31 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200">
-      <div className="flex justify-around py-2">
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (pathname === "/" && item.href === "/players");
-          const Icon = isActive ? item.iconSolid : item.icon;
+    <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-around py-3">
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (pathname === "/" && item.href === "/matches");
+            const Icon = isActive ? item.iconSolid : item.icon;
 
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
-                isActive
-                  ? "text-emerald-600 bg-emerald-50"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <Icon className="h-6 w-6" />
-              <span className="text-xs mt-1 font-medium">{item.name}</span>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? "text-emerald-400 bg-emerald-500/10"
+                    : "text-gray-400 hover:text-gray-200"
+                }`}
+              >
+                <Icon className="h-6 w-6" />
+                <span className="text-xs mt-1 font-medium">{item.name}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

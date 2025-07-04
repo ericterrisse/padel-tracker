@@ -15,24 +15,55 @@ model Player {
   name      String   @unique
   createdAt DateTime @default(now())
 
+  // Relations for pairs
+  pair1 Pair[] @relation("Player1")
+  pair2 Pair[] @relation("Player2")
+}
+
+model Pair {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  // Two players in the pair
+  player1Id String
+  player1   Player @relation("Player1", fields: [player1Id], references: [id])
+  player2Id String
+  player2   Player @relation("Player2", fields: [player2Id], references: [id])
+
   // Relations for matches
-  team1Matches Match[] @relation("Team1Players")
-  team2Matches Match[] @relation("Team2Players")
+  team1Matches Match[] @relation("Team1")
+  team2Matches Match[] @relation("Team2")
+}
+
+model Set {
+  id            String @id @default(cuid())
+  index         Int // Set number (1, 2, 3, etc.)
+  team1Games    Int // Games won by team 1
+  team2Games    Int // Games won by team 2
+  tiebreakTeam1 Int? // Optional tiebreak points for team 1
+  tiebreakTeam2 Int? // Optional tiebreak points for team 2
+
+  // Relation to match
+  matchId String
+  match   Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
 }
 
 model Match {
   id         String   @id @default(cuid())
   date       DateTime @default(now())
-  sets       String // JSON array of sets: [{"team1": 6, "team2": 4}, {"team1": 6, "team2": 3}]
   setsTeam1  Int // Number of sets won by team 1
   setsTeam2  Int // Number of sets won by team 2
-  gamesTeam1 Int // Total games won by team 1
-  gamesTeam2 Int // Total games won by team 2
+  superTeam1 Int? // Optional super tiebreak points for team 1
+  superTeam2 Int? // Optional super tiebreak points for team 2
   createdAt  DateTime @default(now())
 
-  // Team 1 players (2 players)
-  team1Players Player[] @relation("Team1Players")
+  // Team pairs
+  team1Id String
+  team1   Pair   @relation("Team1", fields: [team1Id], references: [id])
+  team2Id String
+  team2   Pair   @relation("Team2", fields: [team2Id], references: [id])
 
-  // Team 2 players (2 players)
-  team2Players Player[] @relation("Team2Players")
+  // Sets in the match
+  sets Set[]
 }

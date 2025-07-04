@@ -1,183 +1,262 @@
 import { prisma } from "@/lib/prisma";
-import { PlusIcon, TrophyIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
+import { TrophyIcon } from "@heroicons/react/24/outline";
+
+type Match = {
+  id: string;
+  date: Date;
+  setsTeam1: number;
+  setsTeam2: number;
+  superTeam1: number | null;
+  superTeam2: number | null;
+  team1: {
+    id: string;
+    name: string;
+    player1: { id: string; name: string };
+    player2: { id: string; name: string };
+  };
+  team2: {
+    id: string;
+    name: string;
+    player1: { id: string; name: string };
+    player2: { id: string; name: string };
+  };
+  sets: {
+    id: string;
+    index: number;
+    team1Games: number;
+    team2Games: number;
+    tiebreakTeam1: number | null;
+    tiebreakTeam2: number | null;
+  }[];
+};
 
 type Set = {
-  team1: number;
-  team2: number;
+  id: string;
+  index: number;
+  team1Games: number;
+  team2Games: number;
+  tiebreakTeam1: number | null;
+  tiebreakTeam2: number | null;
 };
 
 async function getMatches() {
   return await prisma.match.findMany({
     include: {
-      team1Players: true,
-      team2Players: true,
+      team1: {
+        include: {
+          player1: true,
+          player2: true,
+        },
+      },
+      team2: {
+        include: {
+          player1: true,
+          player2: true,
+        },
+      },
+      sets: {
+        orderBy: { index: "asc" },
+      },
     },
     orderBy: { date: "desc" },
   });
 }
 
+function determineMatchWinner(match: Match) {
+  // If sets are different, the team with more sets wins
+  if (match.setsTeam1 !== match.setsTeam2) {
+    return match.setsTeam1 > match.setsTeam2;
+  }
+
+  // If sets are tied, check super tiebreak
+  if (match.superTeam1 !== null && match.superTeam2 !== null) {
+    return match.superTeam1 > match.superTeam2;
+  }
+
+  // Fallback to sets comparison (shouldn't happen in normal cases)
+  return match.setsTeam1 > match.setsTeam2;
+}
+
+function determineSetWinner(set: Set) {
+  // If games are different, the team with more games wins
+  if (set.team1Games !== set.team2Games) {
+    return set.team1Games > set.team2Games;
+  }
+
+  // If games are tied, check tiebreak
+  if (set.tiebreakTeam1 !== null && set.tiebreakTeam2 !== null) {
+    return set.tiebreakTeam1 > set.tiebreakTeam2;
+  }
+
+  // Fallback to games comparison
+  return set.team1Games > set.team2Games;
+}
+
 export default async function MatchesPage() {
   const matches = await getMatches();
 
-  const formatSetsDisplay = (setsJson: string) => {
-    try {
-      const sets: Set[] = JSON.parse(setsJson);
-      return sets.map((set) => `${set.team1}-${set.team2}`).join(" ");
-    } catch {
-      return "Invalid format";
-    }
-  };
-
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Matches</h1>
-        <Link
-          href="/matches/new"
-          className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors"
-        >
-          <PlusIcon className="h-4 w-4" />
-          New Match
-        </Link>
-      </div>
+    <div className="min-h-[90vh] bg-gray-950 p-6">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-light mb-6 text-white">Matches</h1>
 
-      <div className="space-y-4">
-        {matches.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-2">
-              <TrophyIcon className="h-12 w-12 mx-auto" />
-            </div>
-            <p className="text-gray-500">No matches yet</p>
-            <p className="text-sm text-gray-400">Record your first match</p>
-          </div>
-        ) : (
-          matches.map((match) => {
-            const team1Won = match.setsTeam1 > match.setsTeam2;
-
-            return (
-              <div
-                key={match.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-sm text-gray-500">
-                    {new Date(match.date).toLocaleDateString()}
-                  </div>
-                  <div className="text-sm font-medium text-gray-900">
-                    Sets: {match.setsTeam1}-{match.setsTeam2}
-                  </div>
-                </div>
-
-                {/* Sets Display */}
-                <div className="text-center mb-4">
-                  <div className="text-lg font-mono font-medium text-gray-900">
-                    {formatSetsDisplay(match.sets)}
-                  </div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    Total Games: {match.gamesTeam1}-{match.gamesTeam2}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {/* Team 1 */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg ${
-                      team1Won
-                        ? "bg-emerald-50 border border-emerald-200"
-                        : "bg-gray-50"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        {team1Won && (
-                          <TrophyIcon className="h-4 w-4 text-emerald-600" />
-                        )}
-                        <span
-                          className={`font-medium ${
-                            team1Won ? "text-emerald-900" : "text-gray-700"
-                          }`}
-                        >
-                          Team 1
-                        </span>
-                      </div>
-                      <div
-                        className={`text-sm ${
-                          team1Won ? "text-emerald-700" : "text-gray-600"
-                        }`}
-                      >
-                        {match.team1Players.map((p) => p.name).join(" & ")}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div
-                        className={`text-xl font-bold ${
-                          team1Won ? "text-emerald-900" : "text-gray-700"
-                        }`}
-                      >
-                        {match.setsTeam1}
-                      </div>
-                      <div
-                        className={`text-sm ${
-                          team1Won ? "text-emerald-700" : "text-gray-600"
-                        }`}
-                      >
-                        {match.gamesTeam1} games
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Team 2 */}
-                  <div
-                    className={`flex items-center justify-between p-3 rounded-lg ${
-                      !team1Won
-                        ? "bg-emerald-50 border border-emerald-200"
-                        : "bg-gray-50"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        {!team1Won && (
-                          <TrophyIcon className="h-4 w-4 text-emerald-600" />
-                        )}
-                        <span
-                          className={`font-medium ${
-                            !team1Won ? "text-emerald-900" : "text-gray-700"
-                          }`}
-                        >
-                          Team 2
-                        </span>
-                      </div>
-                      <div
-                        className={`text-sm ${
-                          !team1Won ? "text-emerald-700" : "text-gray-600"
-                        }`}
-                      >
-                        {match.team2Players.map((p) => p.name).join(" & ")}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div
-                        className={`text-xl font-bold ${
-                          !team1Won ? "text-emerald-900" : "text-gray-700"
-                        }`}
-                      >
-                        {match.setsTeam2}
-                      </div>
-                      <div
-                        className={`text-sm ${
-                          !team1Won ? "text-emerald-700" : "text-gray-600"
-                        }`}
-                      >
-                        {match.gamesTeam2} games
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        <div className="space-y-6">
+          {matches.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-gray-600 mb-4">
+                <TrophyIcon className="h-16 w-16 mx-auto" />
               </div>
-            );
-          })
-        )}
+              <p className="text-gray-400 text-lg">No matches yet</p>
+              <p className="text-gray-600 text-sm mt-2">
+                Record your first match in the config page
+              </p>
+            </div>
+          ) : (
+            matches.map((match) => {
+              const team1Won = determineMatchWinner(match);
+
+              return (
+                <div
+                  key={match.id}
+                  className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:bg-gray-800 transition-all duration-200"
+                >
+                  {/* Date */}
+                  <div className="bg-gray-800 px-6 py-3 border-b border-gray-700 text-center">
+                    <div className="text-white font-medium">
+                      {new Date(match.date).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Teams */}
+                  <div className="p-6 space-y-4">
+                    {/* Team 1 */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`font-medium ${
+                            team1Won ? "text-emerald-300" : "text-white"
+                          }`}
+                        >
+                          {match.team1.name}
+                        </span>
+                        <span
+                          className={`text-sm ${
+                            team1Won ? "text-emerald-400" : "text-gray-400"
+                          }`}
+                        >
+                          ({match.team1.player1.name} &{" "}
+                          {match.team1.player2.name})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {match.sets.map((set) => {
+                          const setWonByTeam1 = determineSetWinner(set);
+                          return (
+                            <span
+                              key={set.id}
+                              className={`text-lg font-medium ${
+                                setWonByTeam1
+                                  ? "text-emerald-300"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              {set.team1Games}
+                              {set.tiebreakTeam1 !== null && (
+                                <sup className="text-xs">
+                                  {set.tiebreakTeam1}
+                                </sup>
+                              )}
+                            </span>
+                          );
+                        })}
+                        <span
+                          className={`text-xl font-bold ml-4 ${
+                            team1Won ? "text-emerald-300" : "text-gray-300"
+                          }`}
+                        >
+                          {match.setsTeam1}
+                        </span>
+                        {match.superTeam1 !== null && (
+                          <span
+                            className={`text-sm ml-2 ${
+                              team1Won ? "text-emerald-400" : "text-gray-400"
+                            }`}
+                          >
+                            ({match.superTeam1})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Team 2 */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`font-medium ${
+                            !team1Won ? "text-emerald-300" : "text-white"
+                          }`}
+                        >
+                          {match.team2.name}
+                        </span>
+                        <span
+                          className={`text-sm ${
+                            !team1Won ? "text-emerald-400" : "text-gray-400"
+                          }`}
+                        >
+                          ({match.team2.player1.name} &{" "}
+                          {match.team2.player2.name})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        {match.sets.map((set) => {
+                          const setWonByTeam1 = determineSetWinner(set);
+                          return (
+                            <span
+                              key={set.id}
+                              className={`text-lg font-medium ${
+                                !setWonByTeam1
+                                  ? "text-emerald-300"
+                                  : "text-gray-300"
+                              }`}
+                            >
+                              {set.team2Games}
+                              {set.tiebreakTeam2 !== null && (
+                                <sup className="text-xs">
+                                  {set.tiebreakTeam2}
+                                </sup>
+                              )}
+                            </span>
+                          );
+                        })}
+                        <span
+                          className={`text-xl font-bold ml-4 ${
+                            !team1Won ? "text-emerald-300" : "text-gray-300"
+                          }`}
+                        >
+                          {match.setsTeam2}
+                        </span>
+                        {match.superTeam2 !== null && (
+                          <span
+                            className={`text-sm ml-2 ${
+                              !team1Won ? "text-emerald-400" : "text-gray-400"
+                            }`}
+                          >
+                            ({match.superTeam2})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );
